@@ -9,12 +9,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth';
 import { UsersModule } from './users';
 import { APP_PIPE } from '@nestjs/core';
+import { RedisModule } from './redis.module';
 import { CurrentUserMiddleware } from './users/middlewares';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,

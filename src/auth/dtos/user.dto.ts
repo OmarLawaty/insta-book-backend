@@ -18,4 +18,7 @@ export class UserDTO {
 
   @Expose()
   isAdmin: boolean;
+
+  @Expose()
+  authId: string;
 }
