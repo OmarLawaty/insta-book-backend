@@ -4,6 +4,8 @@ import { Serialize } from 'src/interceptors';
 import { CreateUserDTO, LoginUserDTO, UserDTO } from './dtos';
 
 import { AuthService } from './auth.service';
+import { CurrentUser } from 'src/users/decorators';
+import { User } from 'src/users';
 
 @Serialize(UserDTO)
 @Controller('auth')
@@ -11,8 +13,8 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Get('current-user')
-  currentUser(@Session() session: any) {
-    return this.authService.currentUser(session.userId);
+  currentUser(@CurrentUser() user: User) {
+    return this.authService.currentUser(user.id);
   }
 
   @Post('signup')
