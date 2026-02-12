@@ -12,7 +12,7 @@ export class CreateUserDTO {
   @IsString()
   lastName: string;
 
-  @IsDateString()
+  @IsDateString({ strict: false })
   birthday: string;
 
   @IsEmail()
