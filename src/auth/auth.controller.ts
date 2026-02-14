@@ -2,7 +2,13 @@ import { Body, Controller, Get, Post, Session } from '@nestjs/common';
 
 import { Serialize } from 'src/interceptors';
 
-import { CreateUserDTO, LoginUserDTO, UserDTO, VerifyOTPDTO } from './dtos';
+import {
+  CreateUserDTO,
+  LoginUserDTO,
+  ResendOTPDTO,
+  UserDTO,
+  VerifyOTPDTO,
+} from './dtos';
 import { AuthService } from './auth.service';
 import { CurrentUser } from 'src/users/decorators';
 import { User } from 'src/users';
@@ -48,11 +54,12 @@ export class AuthController {
   }
 
   @Post('verify-otp')
-  async verifyOTP(@Body() body: VerifyOTPDTO, @Session() session: any) {
-    const user = await this.authService.verifyOTP(body);
+  async verifyOTP(@Body() body: VerifyOTPDTO) {
+    return await this.authService.verifyOTP(body);
+  }
 
-    session.userId = user.id;
-
-    return user;
+  @Post('resend-otp')
+  async resendOtp(@Body() body: ResendOTPDTO) {
+    return this.authService.resendOTP(body.authId);
   }
 }

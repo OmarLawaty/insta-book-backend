@@ -116,7 +116,38 @@ export class AuthService {
     await this.usersService.update(user.id, { password: session.password });
 
     await this.redis.del(key);
+  }
 
-    return user;
+  async resendOTP(authId: string) {
+    const key = this.getAuthIdKey(authId);
+    const session = await this.redis.hgetall(key);
+
+    if (!session || !session.email)
+      throw new BadRequestException('Session expired');
+
+    const resendCount = parseInt(session.otp_resend_count || '0', 10);
+    if (resendCount >= 3)
+      throw new BadRequestException('OTP resend limit reached');
+
+    const lastSentAt = parseInt(session.otp_last_sent_at || '0', 10);
+    const now = Date.now();
+
+    if (lastSentAt && now - lastSentAt < 60_000)
+      throw new BadRequestException('Please wait before resending OTP');
+
+    const otp = randomInt(100000, 999999).toString();
+    const hashedOtp = await hash(otp, 10);
+
+    await this.redis.hmset(key, {
+      otp: hashedOtp,
+      otp_attempts: 0,
+      otp_resend_count: resendCount + 1,
+      otp_last_sent_at: now,
+    });
+
+    const ttl = await this.redis.ttl(key);
+    if (ttl > 0) await this.redis.expire(key, ttl);
+
+    await this.mailService.sendResetCode(session.email, otp);
   }
 }
