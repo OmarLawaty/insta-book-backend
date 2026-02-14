@@ -12,8 +12,8 @@ import { User } from 'src/users';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Get('current-user')
-  currentUser(@CurrentUser() user: User) {
+  @Get('me')
+  me(@CurrentUser() user: User) {
     return this.authService.currentUser(user);
   }
 
