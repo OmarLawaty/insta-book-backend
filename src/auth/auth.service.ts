@@ -64,7 +64,9 @@ export class AuthService {
   async forgotPassword({ email, password }: LoginUserDTO) {
     const user = await this.usersService.find(email);
 
-    if (!user.length) return;
+    if (!user.length) {
+      throw new NotFoundException('User not found');
+    }
 
     const encryptedPassword = await getEncryptedPassword(password);
 
