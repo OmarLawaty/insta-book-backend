@@ -1,11 +1,12 @@
-import { User } from 'src/users';
+import { User } from 'src/users/user.entity';
+import { Post } from 'src/posts/post.entity';
 import { DataSourceOptions, DataSource } from 'typeorm';
 
 export const getDataSourceOptions = (): DataSourceOptions => {
   const dataSourceOptions: Partial<DataSourceOptions> = {
     synchronize: false,
     migrations: ['./migrations/*.{ts,js}'],
-    entities: [User],
+    entities: [User, Post],
   };
 
   switch (process.env.NODE_ENV) {

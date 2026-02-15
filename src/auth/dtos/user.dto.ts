@@ -11,9 +11,6 @@ export class UserDTO {
   lastName: string;
 
   @Expose()
-  birthday: string;
-
-  @Expose()
   email: string;
 
   @Expose()
