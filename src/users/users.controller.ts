@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { Serialize } from 'src/interceptors';
-import { UserDTO } from './dto';
+import { UserDTO } from './dtos';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators';
 import { AuthGuard } from 'src/guards';
