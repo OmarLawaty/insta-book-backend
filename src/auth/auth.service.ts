@@ -22,8 +22,8 @@ export class AuthService {
     private mailService: MailService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
-  async currentUser(user: User | null) {
-    if (!user) return null;
+  async isLoggedIn(user: User | null) {
+    if (!user) return false;
 
     return this.usersService.findOne(user.id);
   }

@@ -18,9 +18,9 @@ import { User } from 'src/users';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Get('current-user')
-  async currentUser(@CurrentUser() user: User) {
-    return this.authService.currentUser(user);
+  @Get()
+  async isLoggedIn(@CurrentUser() user: User) {
+    return !!(await this.authService.isLoggedIn(user));
   }
 
   @Post('signup')
