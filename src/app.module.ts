@@ -12,6 +12,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { RedisModule } from './redis.module';
 import { CurrentUserMiddleware } from './users/middlewares';
 import { PostsModule } from './posts/posts.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PostsModule } from './posts/posts.module';
     UsersModule,
     RedisModule,
     PostsModule,
+    CloudinaryModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,

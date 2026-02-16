@@ -19,7 +19,10 @@ export class UsersService {
   findOne(id: number) {
     if (!id) return null;
 
-    return this.repo.findOneBy({ id });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['posts', 'liked', 'saved', 'image'],
+    });
   }
 
   find(email: string) {

@@ -15,7 +15,7 @@ export class UsersController {
 
   @Get('me')
   async me(@CurrentUser() currentUser: User) {
-    const user = this.usersService.findOne(currentUser.id);
+    const user = this.usersService.findOne(currentUser?.id);
 
     if (!user) return null;
 
