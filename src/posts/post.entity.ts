@@ -1,10 +1,16 @@
 import { User } from 'src/users/user.entity';
+import { Image } from 'src/cloudinary/image.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -18,21 +24,34 @@ export class Post {
   @Column({ type: 'simple-json' })
   tags: string[];
 
-  @Column()
-  imageUrl: string;
-
-  @Column()
-  imageId: string;
+  @OneToOne(() => Image, {
+    eager: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn()
+  image: Image;
 
   @Column()
   location: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   creator: User;
 
-  @ManyToMany(() => User, (user) => user.liked)
+  @JoinTable()
+  @ManyToMany(() => User, (user) => user.liked, { onDelete: 'SET NULL' })
   likes: User[];
 
-  @ManyToMany(() => User, (profile) => profile.saved)
+  @JoinTable()
+  @ManyToMany(() => User, (profile) => profile.saved, { onDelete: 'SET NULL' })
   saves: User[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
