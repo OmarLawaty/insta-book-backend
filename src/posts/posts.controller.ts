@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -60,8 +61,8 @@ export class PostsController {
     return this.postsService.find(search);
   }
 
-  @Get('delete/:id')
-  deletePost(@Param('id') id: number) {
-    return this.postsService.remove(id);
+  @Delete('/:id')
+  deletePost(@Param('id') id: number, @CurrentUser() user: User) {
+    return this.postsService.remove(id, user);
   }
 }
