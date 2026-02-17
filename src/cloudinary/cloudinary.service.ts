@@ -18,8 +18,9 @@ export class CloudinaryService {
           resolve(result);
         },
       );
+      if (!file) return reject(new NotFoundException('File not found'));
 
-      upload.end(file.buffer);
+      upload.end(file?.buffer);
     });
   }
 
