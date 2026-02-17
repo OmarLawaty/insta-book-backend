@@ -46,4 +46,24 @@ export class UsersService {
 
     return this.repo.remove(user);
   }
+
+  async getTopUsers(limit: number) {
+    const qb = this.repo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.image', 'image')
+      .leftJoinAndSelect('user.posts', 'post')
+      .leftJoin('post.likes', 'likes')
+      .addSelect('COUNT(likes.id)', 'likesCount')
+      .groupBy('user.id')
+      .orderBy('likesCount', 'DESC')
+      .limit(limit);
+
+    const { entities, raw } = await qb.getRawAndEntities();
+
+    return entities.map((user, idx) => {
+      const likesCount = Number(raw[idx]?.likesCount ?? 0);
+
+      return Object.assign(user, { likesCount });
+    });
+  }
 }
