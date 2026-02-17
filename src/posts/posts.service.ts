@@ -116,10 +116,11 @@ export class PostsService {
     return this.repo.save(post);
   }
 
-  async remove(id: number) {
+  async remove(id: number, user: User) {
     const post = await this.findOne(id);
 
-    if (!post) throw new NotFoundException('Post not found');
+    if (!post || post.creator.id !== user.id)
+      throw new NotFoundException('Post not found');
 
     if (post.image) await this.cloudinaryService.deleteAndRemove(post.image.id);
 

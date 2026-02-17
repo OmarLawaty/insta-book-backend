@@ -51,11 +51,12 @@ export class UsersService {
     const qb = this.repo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.image', 'image')
-      .leftJoinAndSelect('user.posts', 'post')
+      .leftJoin('user.posts', 'post')
       .leftJoin('post.likes', 'likes')
       .addSelect('COUNT(likes.id)', 'likesCount')
       .groupBy('user.id')
-      .orderBy('likesCount', 'DESC')
+      .addGroupBy('image.id')
+      .orderBy('"likesCount"', 'DESC')
       .limit(limit);
 
     const { entities, raw } = await qb.getRawAndEntities();
