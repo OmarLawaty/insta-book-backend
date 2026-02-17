@@ -18,12 +18,16 @@ export class SerializeInterceptor implements NestInterceptor {
   constructor(private dto: ClassConstructor) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next
-      .handle()
-      .pipe(
-        map((data) =>
-          plainToInstance(this.dto, data, { excludeExtraneousValues: true }),
-        ),
-      );
+    const request = context.switchToHttp().getRequest();
+    const currentUserId = request?.currentUser?.id;
+
+    return next.handle().pipe(
+      map((data) =>
+        plainToInstance(this.dto, data, {
+          excludeExtraneousValues: true,
+          ...(currentUserId ? { context: { currentUserId } } : {}),
+        } as any),
+      ),
+    );
   }
 }

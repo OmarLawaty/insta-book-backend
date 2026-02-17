@@ -3,3 +3,4 @@ export * from './cloudinary.service';
 export * from './cloudinary.provider';
 export * from './cloudinary.controller';
 export * from './image.entity';
+export * from './dtos';

@@ -1,4 +1,5 @@
 import { Expose, Transform, Type } from 'class-transformer';
+import { ImageDTO } from 'src/cloudinary';
 
 class CreatorSerializer {
   @Expose()
@@ -10,6 +11,7 @@ class CreatorSerializer {
   @Expose()
   lastName: string;
 
+  @Transform(({ obj }) => obj.image?.url ?? null)
   @Expose()
   imageUrl: string;
 }
@@ -25,8 +27,8 @@ export class PostDTO {
   tags: string[];
 
   @Expose()
-  @Transform(({ obj }) => obj.image?.url ?? null)
-  imageUrl: string;
+  @Type(() => ImageDTO)
+  image: ImageDTO;
 
   @Expose()
   location: string;
@@ -41,11 +43,27 @@ export class PostDTO {
   @Expose()
   creator: CreatorSerializer;
 
-  @Transform(({ obj }) => obj.likes?.map((user) => user.id) ?? [])
+  @Transform(({ obj }) => obj.likes?.length ?? 0)
   @Expose()
-  likeIds: number[];
+  likes: number;
 
-  @Transform(({ obj }) => obj.saves?.map((user) => user.id) ?? [])
+  @Transform(({ obj, options }) => {
+    const currentUserId = (options as any)?.context?.currentUserId;
+
+    if (!currentUserId) return false;
+
+    return obj.likes?.some((user) => user.id === currentUserId) ?? false;
+  })
   @Expose()
-  saveIds: number[];
+  isLiked: boolean;
+
+  @Transform(({ obj, options }) => {
+    const currentUserId = (options as any)?.context?.currentUserId;
+
+    if (!currentUserId) return false;
+
+    return obj.saves?.some((user) => user.id === currentUserId) ?? false;
+  })
+  @Expose()
+  isSaved: boolean;
 }

@@ -21,6 +21,11 @@ import { Serialize } from 'src/interceptors';
 export class PostsController {
   constructor(private postsService: PostsService) {}
 
+  @Get('/recent')
+  getRecentPosts() {
+    return this.postsService.getRecent();
+  }
+
   @Get(':id')
   getPost(@Param('id') id: number) {
     return this.postsService.findOne(id);
@@ -31,9 +36,23 @@ export class PostsController {
     return this.postsService.create(body, user);
   }
 
+  @Post('save/:id')
+  savePost(@Param('id') id: number, @CurrentUser() user: User) {
+    return this.postsService.save(id, user);
+  }
+
+  @Post('like/:id')
+  likePost(@Param('id') id: number, @CurrentUser() user: User) {
+    return this.postsService.like(id, user);
+  }
+
   @Put(':id')
-  updatePost(@Param('id') id: number, @Body() body: Partial<CreatePostDTO>) {
-    return this.postsService.update(id, body);
+  updatePost(
+    @Param('id') id: number,
+    @Body() body: Partial<CreatePostDTO>,
+    @CurrentUser() user: User,
+  ) {
+    return this.postsService.update(id, body, user);
   }
 
   @Get('search/:search')
