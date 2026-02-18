@@ -15,7 +15,6 @@ import { MailService } from 'src/mail.service';
 import { getEncryptedPassword, getHashedPassword } from './helpers';
 import { randomBytes, randomInt } from 'crypto';
 import { compare, hash } from 'bcrypt';
-import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -68,16 +67,6 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync({ sub: user.id });
 
     return { user, accessToken };
-  }
-
-  signout(res: Response) {
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      sameSite: isProduction ? 'none' : 'lax',
-      secure: isProduction,
-    });
   }
 
   async forgotPassword({ email, password }: LoginUserDTO) {
