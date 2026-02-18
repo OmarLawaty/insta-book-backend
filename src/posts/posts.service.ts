@@ -6,6 +6,11 @@ import { CreatePostDTO } from './dtos';
 import { User } from 'src/users';
 import { CloudinaryService } from 'src/cloudinary';
 import { Image } from 'src/cloudinary/image.entity';
+import {
+  buildCursorPaginationResult,
+  CursorPaginationQuery,
+  normalizeCursorPaginationQuery,
+} from 'src/common';
 
 @Injectable()
 export class PostsService {
@@ -50,14 +55,23 @@ export class PostsService {
       .getMany();
   }
 
-  async getRecent() {
-    // TODO: Implement pagination
-    const posts = await this.repo.find({
-      order: { createdAt: 'DESC' },
-      relations: ['creator', 'likes', 'saves', 'image'],
-    });
+  async getRecent(query: CursorPaginationQuery = {}) {
+    const { cursor, limit } = normalizeCursorPaginationQuery(query);
 
-    return posts;
+    const qb = this.repo
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.creator', 'creator')
+      .leftJoinAndSelect('post.likes', 'likes')
+      .leftJoinAndSelect('post.saves', 'saves')
+      .leftJoinAndSelect('post.image', 'image')
+      .orderBy('post.id', 'DESC')
+      .take(limit + 1);
+
+    if (cursor) qb.andWhere('post.id < :cursor', { cursor });
+
+    const posts = await qb.getMany();
+
+    return buildCursorPaginationResult(posts, limit, (post) => post.id);
   }
 
   async save(id: number, user: User) {
