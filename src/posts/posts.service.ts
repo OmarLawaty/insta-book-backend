@@ -61,39 +61,47 @@ export class PostsService {
   }
 
   async save(id: number, user: User) {
-    const post = await this.findOne(id);
-
-    if (!post) throw new NotFoundException('Post not found');
-
-    const relation = this.repo
-      .createQueryBuilder('post')
-      .relation(Post, 'saves')
-      .of(post);
-
-    const alreadySaved = post.saves?.some(
-      (savedUser) => savedUser.id === user.id,
-    );
-    if (alreadySaved) return await relation.remove(user.id);
-
-    await relation.add(user.id);
+    return this.togglePostUserRelation(id, user, 'saves');
   }
 
   async like(id: number, user: User) {
+    return this.togglePostUserRelation(id, user, 'likes');
+  }
+
+  private async togglePostUserRelation(
+    id: number,
+    user: User,
+    relationName: 'likes' | 'saves',
+  ) {
     const post = await this.findOne(id);
 
     if (!post) throw new NotFoundException('Post not found');
 
     const relation = this.repo
       .createQueryBuilder('post')
-      .relation(Post, 'likes')
+      .relation(Post, relationName)
       .of(post);
 
-    const alreadyLiked = post.likes?.some(
-      (likedUser) => likedUser.id === user.id,
+    const usersInRelation = post[relationName] ?? [];
+    const alreadyInRelation = usersInRelation.some(
+      (relationUser) => relationUser.id === user.id,
     );
-    if (alreadyLiked) return await relation.remove(user.id);
+
+    if (alreadyInRelation) {
+      await relation.remove(user.id);
+
+      return {
+        ...post,
+        [relationName]: usersInRelation.filter((u) => u.id !== user.id),
+      };
+    }
 
     await relation.add(user.id);
+
+    return {
+      ...post,
+      [relationName]: [...usersInRelation, user],
+    };
   }
 
   async update(id: number, updatedPost: Partial<CreatePostDTO>, user: User) {
