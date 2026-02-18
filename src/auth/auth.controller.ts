@@ -1,20 +1,20 @@
-import { Body, Controller, Get, Post, Session } from '@nestjs/common';
-
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { Serialize } from 'src/interceptors';
 
 import {
   CreateUserDTO,
   LoginUserDTO,
+  AuthResponseDTO,
   ResendOTPDTO,
-  UserDTO,
   VerifyOTPDTO,
 } from './dtos';
 import { AuthService } from './auth.service';
-import { CurrentUser } from 'src/users/decorators';
+import { CurrentUser } from 'src/users';
 import { User } from 'src/users';
+import { Public } from './decorators';
 
-@Serialize(UserDTO)
 @Controller('auth')
+@Public()
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -23,27 +23,16 @@ export class AuthController {
     return !!(await this.authService.isLoggedIn(user));
   }
 
+  @Serialize(AuthResponseDTO)
   @Post('signup')
-  async signup(@Body() body: CreateUserDTO, @Session() session: any) {
-    const user = await this.authService.signup(body);
-
-    session.userId = user.id;
-
-    return user;
+  async signup(@Body() body: CreateUserDTO) {
+    return this.authService.signup(body);
   }
 
+  @Serialize(AuthResponseDTO)
   @Post('login')
-  async login(@Body() body: LoginUserDTO, @Session() session: any) {
-    const user = await this.authService.login(body);
-
-    session.userId = user.id;
-
-    return user;
-  }
-
-  @Post('signout')
-  signout(@Session() session: any) {
-    session.userId = null;
+  async login(@Body() body: LoginUserDTO) {
+    return this.authService.login(body);
   }
 
   @Post('forgot-password')

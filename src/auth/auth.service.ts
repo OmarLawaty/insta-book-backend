@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
 
 import { User, UsersService } from 'src/users';
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private mailService: MailService,
+    private jwtService: JwtService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
   async isLoggedIn(user: User | null) {
@@ -40,10 +42,14 @@ export class AuthService {
       createUserDTO.password,
     );
 
-    return this.usersService.create({
+    const newUser = await this.usersService.create({
       ...createUserDTO,
       password: encryptedPassword,
     });
+
+    const accessToken = await this.signAccessToken(newUser.id);
+
+    return { user: newUser, accessToken };
   }
 
   async login(loginUserDTO: LoginUserDTO) {
@@ -58,7 +64,13 @@ export class AuthService {
     if (hash !== userHash.toString('hex'))
       throw new BadRequestException('Password is incorrect');
 
-    return user;
+    const accessToken = await this.signAccessToken(user.id);
+
+    return { user, accessToken };
+  }
+
+  private async signAccessToken(userId: number) {
+    return this.jwtService.signAsync({ sub: userId });
   }
 
   async forgotPassword({ email, password }: LoginUserDTO) {
