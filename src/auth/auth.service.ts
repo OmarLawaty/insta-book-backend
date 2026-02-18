@@ -15,6 +15,7 @@ import { MailService } from 'src/mail.service';
 import { getEncryptedPassword, getHashedPassword } from './helpers';
 import { randomBytes, randomInt } from 'crypto';
 import { compare, hash } from 'bcrypt';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -47,7 +48,7 @@ export class AuthService {
       password: encryptedPassword,
     });
 
-    const accessToken = await this.signAccessToken(newUser.id);
+    const accessToken = await this.jwtService.signAsync({ sub: newUser.id });
 
     return { user: newUser, accessToken };
   }
@@ -64,13 +65,19 @@ export class AuthService {
     if (hash !== userHash.toString('hex'))
       throw new BadRequestException('Password is incorrect');
 
-    const accessToken = await this.signAccessToken(user.id);
+    const accessToken = await this.jwtService.signAsync({ sub: user.id });
 
     return { user, accessToken };
   }
 
-  private async signAccessToken(userId: number) {
-    return this.jwtService.signAsync({ sub: userId });
+  signout(res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
+    });
   }
 
   async forgotPassword({ email, password }: LoginUserDTO) {
