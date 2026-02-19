@@ -65,10 +65,14 @@ export class PostsController {
     return this.postsService.update(id, body, user);
   }
 
-  @Serialize(PostDTO)
-  @Get('search/:search')
-  searchPosts(@Param('search') search: string) {
-    return this.postsService.find(search);
+  @Serialize(PaginatedPostsDTO)
+  @Get()
+  searchPosts(
+    @Query('search') search?: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.postsService.search(search, { cursor, limit });
   }
 
   @Delete('/:id')

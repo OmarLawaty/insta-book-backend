@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './post.entity';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CreatePostDTO } from './dtos';
 import { User } from 'src/users';
 import { CloudinaryService } from 'src/cloudinary';
@@ -47,31 +47,27 @@ export class PostsService {
     });
   }
 
-  find(search: string) {
-    return this.repo
-      .createQueryBuilder('post')
-      .where('post.caption LIKE :search', { search: `%${search}%` })
-      .orWhere('post.tags LIKE :search', { search: `%${search}%` })
-      .getMany();
+  async search(search?: string, query: CursorPaginationQuery = {}) {
+    const normalizedSearch = search?.trim();
+
+    if (!normalizedSearch) return this.getRecent(query);
+
+    const qb = this.createPostBaseQuery()
+      .where('(post.caption LIKE :search OR post.tags LIKE :search)', {
+        search: `%${normalizedSearch}%`,
+      })
+      .orderBy('post.updatedAt', 'DESC')
+      .addOrderBy('post.id', 'DESC');
+
+    return this.paginatePostsQuery(qb, query);
   }
 
   async getRecent(query: CursorPaginationQuery = {}) {
-    const { cursor, limit } = normalizeCursorPaginationQuery(query);
+    const qb = this.createPostBaseQuery()
+      .orderBy('post.createdAt', 'DESC')
+      .addOrderBy('post.id', 'DESC');
 
-    const qb = this.repo
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.creator', 'creator')
-      .leftJoinAndSelect('post.likes', 'likes')
-      .leftJoinAndSelect('post.saves', 'saves')
-      .leftJoinAndSelect('post.image', 'image')
-      .orderBy('post.id', 'DESC')
-      .take(limit + 1);
-
-    if (cursor) qb.andWhere('post.id < :cursor', { cursor });
-
-    const posts = await qb.getMany();
-
-    return buildCursorPaginationResult(posts, limit, (post) => post.id);
+    return this.paginatePostsQuery(qb, query);
   }
 
   async save(id: number, user: User) {
@@ -80,6 +76,30 @@ export class PostsService {
 
   async like(id: number, user: User) {
     return this.togglePostUserRelation(id, user, 'likes');
+  }
+
+  private createPostBaseQuery() {
+    return this.repo
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.creator', 'creator')
+      .leftJoinAndSelect('post.likes', 'likes')
+      .leftJoinAndSelect('post.saves', 'saves')
+      .leftJoinAndSelect('post.image', 'image');
+  }
+
+  private async paginatePostsQuery(
+    qb: SelectQueryBuilder<Post>,
+    query: CursorPaginationQuery,
+  ) {
+    const { cursor, limit } = normalizeCursorPaginationQuery(query);
+
+    qb.take(limit + 1);
+
+    if (cursor !== undefined) qb.andWhere('post.id < :cursor', { cursor });
+
+    const posts = await qb.getMany();
+
+    return buildCursorPaginationResult(posts, limit, (post) => post.id);
   }
 
   private async togglePostUserRelation(
