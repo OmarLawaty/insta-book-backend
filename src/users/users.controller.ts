@@ -1,7 +1,7 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 
 import { Serialize } from 'src/interceptors';
-import { TopUsersDTO, UserDTO } from './dtos';
+import { PaginatedUsersDTO, TopUsersDTO, UserDTO } from './dtos';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators';
 import { AuthGuard } from 'src/guards';
@@ -26,5 +26,15 @@ export class UsersController {
   @Get('top/:limit')
   getTopUsers(@Param('limit') limit: number) {
     return this.usersService.getTopUsers(limit);
+  }
+
+  @Serialize(PaginatedUsersDTO)
+  @Get()
+  searchUsers(
+    @Query('search') search?: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.usersService.search(search, { cursor, limit });
   }
 }

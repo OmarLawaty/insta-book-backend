@@ -5,6 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDTO } from 'src/auth/dtos';
 
 import { User } from './user.entity';
+import {
+  buildCursorPaginationResult,
+  CursorPaginationQuery,
+  normalizeCursorPaginationQuery,
+} from 'src/common';
 
 @Injectable()
 export class UsersService {
@@ -66,5 +71,43 @@ export class UsersService {
 
       return Object.assign(user, { likesCount });
     });
+  }
+
+  async search(search?: string, query: CursorPaginationQuery = {}) {
+    const normalizedSearch = search?.trim();
+
+    if (!normalizedSearch)
+      return { data: await this.getTopUsers(10), nextCursor: null };
+
+    const { cursor, limit } = normalizeCursorPaginationQuery(query);
+
+    const qb = this.repo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.image', 'image')
+      .leftJoin('user.posts', 'post')
+      .leftJoin('post.likes', 'likes')
+      .addSelect('COUNT(likes.id)', 'likesCount')
+      .where(
+        'user.firstName LIKE :search OR user.lastName LIKE :search OR user.email LIKE :search',
+        { search: `%${normalizedSearch}%` },
+      )
+      .groupBy('user.id')
+      .addGroupBy('image.id')
+      .orderBy('likesCount', 'DESC')
+      .addOrderBy('user.id', 'DESC')
+      .take(limit + 1);
+
+    if (cursor !== undefined) qb.andWhere('user.id < :cursor', { cursor });
+
+    const { entities, raw } = await qb.getRawAndEntities();
+    const usersWithLikes = entities.map((user, idx) =>
+      Object.assign(user, { likesCount: Number(raw[idx]?.likesCount ?? 0) }),
+    );
+
+    return buildCursorPaginationResult(
+      usersWithLikes,
+      limit,
+      (user) => user.id,
+    );
   }
 }
