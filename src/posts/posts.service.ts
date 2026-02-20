@@ -70,6 +70,24 @@ export class PostsService {
     return this.paginatePostsQuery(qb, query);
   }
 
+  async getSaved(user: User, query: CursorPaginationQuery = {}) {
+    const { cursor, limit } = normalizeCursorPaginationQuery(query);
+
+    const qb = this.createPostBaseQuery()
+      .innerJoin('post.saves', 'savedUser')
+      .where('savedUser.id = :userId', { userId: user.id })
+      .distinct(true)
+      .orderBy('post.updatedAt', 'DESC')
+      .addOrderBy('post.id', 'DESC')
+      .take(limit + 1);
+
+    if (cursor !== undefined) qb.andWhere('post.id < :cursor', { cursor });
+
+    const posts = await qb.getMany();
+
+    return buildCursorPaginationResult(posts, limit, (post) => post.id);
+  }
+
   async save(id: number, user: User) {
     return this.togglePostUserRelation(id, user, 'saves');
   }

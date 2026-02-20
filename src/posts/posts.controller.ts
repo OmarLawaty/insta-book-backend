@@ -31,6 +31,16 @@ export class PostsController {
     return this.postsService.getRecent({ cursor, limit });
   }
 
+  @Serialize(PaginatedPostsDTO)
+  @Get('/saved')
+  getSavedPosts(
+    @CurrentUser() user: User,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.postsService.getSaved(user, { cursor, limit });
+  }
+
   @Serialize(PostDTO)
   @Get(':id')
   getPost(@Param('id') id: number) {
