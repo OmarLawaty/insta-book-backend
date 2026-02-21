@@ -1,7 +1,11 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 
 import { Serialize } from 'src/interceptors';
-import { PaginatedUsersDTO, TopUsersDTO, UserDTO } from './dtos';
+import {
+  PaginatedUsersDTO,
+  PartialUserDTO,
+  TopUsersDTO,
+} from './dtos';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators';
 import { AuthGuard } from 'src/guards';
@@ -12,7 +16,7 @@ import { User } from './user.entity';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Serialize(UserDTO)
+  @Serialize(PartialUserDTO)
   @Get('me')
   async me(@CurrentUser() currentUser: User) {
     const user = await this.usersService.findOne(currentUser?.id);

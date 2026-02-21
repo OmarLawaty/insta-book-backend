@@ -1,20 +1,13 @@
 import { Expose, Type } from 'class-transformer';
 import { ImageDTO } from 'src/cloudinary';
 
-export class TopUsersDTO {
-  @Expose()
-  id: number;
+import { BasicUserDTO } from './basic-user.dto';
 
-  @Expose()
-  firstName: string;
-
-  @Expose()
-  lastName: string;
-
+export class TopUsersDTO extends BasicUserDTO {
   @Expose()
   @Type(() => ImageDTO)
   image: ImageDTO;
 
   @Expose()
-  likesCount?: number;
+  likesCount: number;
 }

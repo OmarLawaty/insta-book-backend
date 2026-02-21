@@ -1,19 +1,10 @@
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+
 import { ImageDTO } from 'src/cloudinary';
 
-export class UserDTO {
-  @Expose()
-  id: number;
+import { BasicUserDTO } from './basic-user.dto';
 
-  @Expose()
-  firstName: string;
-
-  @Expose()
-  lastName: string;
-
-  @Expose()
-  email: string;
-
+export class UserDTO extends BasicUserDTO {
   @Expose()
   birthday: string;
 
@@ -23,19 +14,4 @@ export class UserDTO {
   @Expose()
   @Type(() => ImageDTO)
   image: ImageDTO;
-
-  @Transform(({ obj }) => obj.posts?.map((post) => post.id) ?? [])
-  @Expose()
-  postIds: string[];
-
-  @Transform(({ obj }) => obj.liked?.map((post) => post.id) ?? [])
-  @Expose()
-  likedIds: string[];
-
-  @Transform(({ obj }) => obj.saved?.map((post) => post.id) ?? [])
-  @Expose()
-  savedIds: string[];
-
-  @Expose()
-  likesCount?: number;
 }

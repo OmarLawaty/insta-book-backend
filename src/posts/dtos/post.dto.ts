@@ -1,20 +1,6 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { ImageDTO } from 'src/cloudinary';
-
-class CreatorSerializer {
-  @Expose()
-  id: number;
-
-  @Expose()
-  firstName: string;
-
-  @Expose()
-  lastName: string;
-
-  @Transform(({ obj }) => obj.image?.url ?? null)
-  @Expose()
-  imageUrl: string;
-}
+import { CreatorDto } from './creator.dto';
 
 export class PostDTO {
   @Expose()
@@ -39,9 +25,9 @@ export class PostDTO {
   @Expose()
   updatedAt: Date;
 
-  @Type(() => CreatorSerializer)
+  @Type(() => CreatorDto)
   @Expose()
-  creator: CreatorSerializer;
+  creator: CreatorDto;
 
   @Transform(({ obj }) => obj.likes?.length ?? 0)
   @Expose()
