@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 
 import { Serialize } from 'src/interceptors';
 import {
@@ -6,6 +14,7 @@ import {
   PaginatedUsersDTO,
   PartialUserDTO,
   TopUsersDTO,
+  UpdateUserDTO,
 } from './dtos';
 import { UsersService } from './users.service';
 import { CurrentUser } from './decorators';
@@ -35,6 +44,12 @@ export class UsersController {
     if (!user) return null;
 
     return user;
+  }
+
+  @Serialize(FullUserDTO)
+  @Put('me')
+  updateUser(@Body() body: Partial<UpdateUserDTO>, @CurrentUser() user: User) {
+    return this.usersService.updateUser(user.id, body);
   }
 
   @Serialize(TopUsersDTO)

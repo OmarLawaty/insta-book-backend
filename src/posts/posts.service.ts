@@ -100,6 +100,7 @@ export class PostsService {
     return this.repo
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.creator', 'creator')
+      .leftJoinAndSelect('creator.image', 'creatorImage')
       .leftJoinAndSelect('post.likes', 'likes')
       .leftJoinAndSelect('post.saves', 'saves')
       .leftJoinAndSelect('post.image', 'image');
@@ -168,7 +169,7 @@ export class PostsService {
 
     if (!image) throw new NotFoundException('Image not found');
 
-    if (post.image?.id !== image.id && post.image)
+    if (post.image && post.image.id !== image.id)
       await this.cloudinaryService.deleteAndRemove(post.image.id);
 
     Object.assign(post, updatedPost, { image });

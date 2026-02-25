@@ -3,6 +3,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateUserDTO } from 'src/auth/dtos';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Image } from 'src/cloudinary/image.entity';
 
 import { User } from './user.entity';
 import {
@@ -10,10 +12,15 @@ import {
   CursorPaginationQuery,
   normalizeCursorPaginationQuery,
 } from 'src/common';
+import { UpdateUserDTO } from './dtos';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private repo: Repository<User>,
+    @InjectRepository(Image) private imageRepo: Repository<Image>,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   create(userCred: CreateUserDTO) {
     const user = this.repo.create(userCred);
@@ -63,6 +70,29 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     Object.assign(user, updatedUser);
+
+    return this.repo.save(user);
+  }
+
+  async updateUser(id: number, updatedUser: Partial<UpdateUserDTO>) {
+    const user = await this.findOne(id);
+
+    if (!user || user.id !== id) throw new NotFoundException('User not found');
+
+    let image: Image | null = null;
+
+    if (updatedUser.imageId) {
+      image = await this.imageRepo.findOne({
+        where: { publicId: updatedUser.imageId },
+      });
+
+      if (!image) throw new NotFoundException('Image not found');
+
+      if (user.image && user.image.id !== image.id)
+        await this.cloudinaryService.deleteAndRemove(user.image.id);
+    }
+
+    Object.assign(user, updatedUser, { image });
 
     return this.repo.save(user);
   }
