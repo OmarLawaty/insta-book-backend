@@ -30,6 +30,29 @@ export class UsersService {
     });
   }
 
+  async getUser(id: number) {
+    const user = await this.repo.findOne({
+      where: { id },
+      relations: [
+        'image',
+        'posts',
+        'liked',
+        'saved',
+        'posts.creator',
+        'posts.likes',
+        'posts.saves',
+        'liked.creator',
+        'liked.likes',
+        'liked.saves',
+        'saved.creator',
+        'saved.likes',
+        'saved.saves',
+      ],
+    });
+
+    return user;
+  }
+
   find(email: string) {
     return this.repo.find({ where: { email } });
   }
