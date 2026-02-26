@@ -1,17 +1,20 @@
-import { Post } from 'src/posts';
+import { PostDTO } from 'src/posts/dtos';
 import { UserDTO } from './user.dto';
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 
 export class FullUserDTO extends UserDTO {
-  @Transform(({ obj }) => obj.posts ?? [])
+  @Transform(({ value }) => value ?? [])
+  @Type(() => PostDTO)
   @Expose()
-  posts: Post[];
+  posts: PostDTO[];
 
-  @Transform(({ obj }) => obj.saved ?? [])
+  @Transform(({ value }) => value ?? [])
+  @Type(() => PostDTO)
   @Expose()
-  saved: Post[];
+  saved: PostDTO[];
 
-  @Transform(({ obj }) => obj.liked ?? [])
+  @Transform(({ value }) => value ?? [])
+  @Type(() => PostDTO)
   @Expose()
-  liked: Post[];
+  liked: PostDTO[];
 }

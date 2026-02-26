@@ -46,16 +46,28 @@ export class UsersService {
         'liked',
         'saved',
         'posts.creator',
+        'posts.creator.image',
+        'posts.image',
         'posts.likes',
         'posts.saves',
         'liked.creator',
+        'liked.creator.image',
+        'liked.image',
         'liked.likes',
         'liked.saves',
         'saved.creator',
+        'saved.creator.image',
+        'saved.image',
         'saved.likes',
         'saved.saves',
       ],
     });
+
+    if (user) {
+      user.posts = user.posts?.reverse() ?? [];
+      user.liked = user.liked?.reverse() ?? [];
+      user.saved = user.saved?.reverse() ?? [];
+    }
 
     return user;
   }
