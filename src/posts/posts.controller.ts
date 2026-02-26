@@ -16,12 +16,14 @@ import { CreatePostDTO, PaginatedPostsDTO, PostDTO } from './dtos';
 import { CurrentUser } from 'src/users/decorators';
 import { User } from 'src/users';
 import { Serialize } from 'src/interceptors';
+import { Public } from 'src/auth';
 
 @UseGuards(AuthGuard)
 @Controller('posts')
 export class PostsController {
   constructor(private postsService: PostsService) {}
 
+  @Public()
   @Serialize(PaginatedPostsDTO)
   @Get('/recent')
   getRecentPosts(
@@ -41,6 +43,7 @@ export class PostsController {
     return this.postsService.getSaved(user, { cursor, limit });
   }
 
+  @Public()
   @Serialize(PostDTO)
   @Get(':id')
   getPost(@Param('id') id: number) {
@@ -75,6 +78,7 @@ export class PostsController {
     return this.postsService.update(id, body, user);
   }
 
+  @Public()
   @Serialize(PaginatedPostsDTO)
   @Get()
   searchPosts(

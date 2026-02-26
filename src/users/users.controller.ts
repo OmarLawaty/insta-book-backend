@@ -20,6 +20,7 @@ import { UsersService } from './users.service';
 import { CurrentUser } from './decorators';
 import { AuthGuard } from 'src/guards';
 import { User } from './user.entity';
+import { Public } from 'src/auth/decorators';
 
 @UseGuards(AuthGuard)
 @Controller('users')
@@ -52,18 +53,21 @@ export class UsersController {
     return this.usersService.updateUser(user.id, body);
   }
 
+  @Public()
   @Serialize(TopUsersDTO)
   @Get('top/:limit')
   getTopUsers(@Param('limit') limit: number) {
     return this.usersService.getTopUsers(limit);
   }
 
+  @Public()
   @Serialize(FullUserDTO)
   @Get(':id')
   getUser(@Param('id') id: number) {
     return this.usersService.getUser(id);
   }
 
+  @Public()
   @Serialize(PaginatedUsersDTO)
   @Get()
   searchUsers(
